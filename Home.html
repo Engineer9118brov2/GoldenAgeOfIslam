@@ -157,8 +157,9 @@
     </nav>
 
     <!-- Home Section -->
-    <section id="home" class="hero-pattern py-20 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-7xl mx-auto text-center">
+    <section id="home" class="relative hero-pattern py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <canvas id="hero-animation" class="absolute top-0 left-0 w-full h-full z-0"></canvas>
+        <div class="relative max-w-7xl mx-auto text-center z-10">
             <h1 class="text-4xl md:text-6xl font-bold text-amber-900 mb-6">Islamic Golden Age</h1>
             <p class="text-xl md:text-2xl text-amber-800 max-w-3xl mx-auto mb-10">
                 Discover the remarkable achievements in medicine, mathematics, and literature that shaped our world
@@ -463,6 +464,81 @@
         
         window.addEventListener('scroll', appearOnScroll);
         appearOnScroll(); // Initial check
+
+        // Hero section animation
+        const canvas = document.getElementById('hero-animation');
+        const ctx = canvas.getContext('2d');
+        let animationFrameId;
+        let bubbles = [];
+        let isAnimationPaused = false;
+
+        function resizeCanvas() {
+            const heroSection = document.getElementById('home');
+            canvas.width = heroSection.offsetWidth;
+            canvas.height = heroSection.offsetHeight;
+        }
+
+        function createBubbles() {
+            bubbles = [];
+            const heroSection = document.getElementById('home');
+            const area = heroSection.offsetWidth * heroSection.offsetHeight;
+            const bubbleCount = Math.sqrt(area) / 15;
+
+            for (let i = 0; i < bubbleCount; i++) {
+                const radius = Math.random() * 3 + 1;
+                const x = Math.random() * (canvas.width - radius * 2) + radius;
+                const y = Math.random() * canvas.height;
+                const speedY = Math.random() * 1 + 0.5;
+                const opacity = Math.random() * 0.4 + 0.1;
+                bubbles.push({ x, y, radius, speedY, opacity });
+            }
+        }
+
+        function animate() {
+            if (isAnimationPaused) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            bubbles.forEach(bubble => {
+                ctx.beginPath();
+                ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(217, 119, 6, ${bubble.opacity})`;
+                ctx.fill();
+
+                bubble.y -= bubble.speedY;
+
+                if (bubble.y < -bubble.radius) {
+                    bubble.y = canvas.height + bubble.radius;
+                    bubble.x = Math.random() * canvas.width;
+                }
+            });
+
+            animationFrameId = requestAnimationFrame(animate);
+        }
+
+        function startAnimation() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            resizeCanvas();
+            createBubbles();
+            animate();
+        }
+
+        function handleScroll() {
+            if (window.scrollY > 100) {
+                isAnimationPaused = true;
+            } else {
+                if (isAnimationPaused) {
+                    isAnimationPaused = false;
+                    animate();
+                }
+            }
+        }
+
+        window.addEventListener('resize', startAnimation);
+        window.addEventListener('scroll', handleScroll);
+
+        // Use a timeout to ensure the hero section has its full dimensions
+        setTimeout(startAnimation, 100);
+
     </script>
 </body>
 </html>
