@@ -154,8 +154,8 @@
             </div>
         </div>
     </nav>
-
-    
+<main>
+    <canvas id="main-background-animation" class="fixed top-0 left-0 w-full h-full -z-10"></canvas>
     <!-- Home Section -->
     <section id="home" class="relative hero-pattern py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <canvas id="hero-animation" class="absolute top-0 left-0 w-full h-full z-0"></canvas>
@@ -617,36 +617,41 @@
             });
         }
 
-        // Animation for Literature Section (Calligraphic lines)
-        let lines = [];
+        // Animation for Literature Section (Falling Letters)
+        let letters = [];
+        const chars = 'ابجدهوزحطيكلمنسعفصقرشتثخذضظغ'; // Arabic alphabet
+
         function initLiteratureAnimation() {
-            lines = [];
-            for (let i = 0; i < 20; i++) {
-                lines.push({
+            letters = [];
+            // Increased the number of letters to 90
+            for (let i = 0; i < 90; i++) {
+                letters.push({
+                    char: chars.charAt(Math.floor(Math.random() * chars.length)),
                     x: Math.random() * mainCanvas.width,
-                    y: Math.random() * mainCanvas.height,
-                    length: Math.random() * 100 + 50,
-                    angle: Math.random() * Math.PI * 2,
-                    speed: (Math.random() - 0.5) * 0.3,
-                    width: Math.random() * 1.5 + 0.5,
-                    color: `rgba(180, 83, 9, ${Math.random() * 0.2 + 0.1})`
+                    y: Math.random() * -500, // Start falling from just above the screen
+                    fontSize: Math.random() * 15 + 10,
+                    speedY: Math.random() * 1 + 0.5,
+                    color: `rgba(180, 83, 9, ${Math.random() * 0.3 + 0.2})`
                 });
             }
         }
 
         function animateLiterature() {
             mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-            lines.forEach(line => {
-                line.x += line.speed;
-                if (line.x > mainCanvas.width + line.length) line.x = -line.length;
-                if (line.x < -line.length) line.x = mainCanvas.width + line.length;
+            letters.forEach(letter => {
+                // Draw the letter
+                mainCtx.fillStyle = letter.color;
+                mainCtx.font = `${letter.fontSize}px 'Playfair Display', serif`;
+                mainCtx.fillText(letter.char, letter.x, letter.y);
 
-                mainCtx.beginPath();
-                mainCtx.moveTo(line.x, line.y);
-                mainCtx.lineTo(line.x + Math.cos(line.angle) * line.length, line.y + Math.sin(line.angle) * line.length);
-                mainCtx.strokeStyle = line.color;
-                mainCtx.lineWidth = line.width;
-                mainCtx.stroke();
+                // Update position
+                letter.y += letter.speedY;
+
+                // Reset when it falls off screen for a continuous flow
+                if (letter.y > mainCanvas.height + 40) {
+                    letter.y = -40; // Reset above the screen
+                    letter.x = Math.random() * mainCanvas.width;
+                }
             });
         }
 
@@ -663,7 +668,8 @@
 
             let newAnimation = null;
 
-            if (scrollY > literatureTop - windowHeight && scrollY < literatureTop + literatureHeight) {
+            // Delay the literature animation until the user is further down the page
+            if (scrollY > literatureTop - windowHeight / 1.5 && scrollY < literatureTop + literatureHeight) {
                 newAnimation = 'literature';
             } else if (scrollY > mathematicsTop - windowHeight && scrollY < mathematicsTop + mathematicsHeight) {
                 newAnimation = 'mathematics';
