@@ -622,11 +622,12 @@
 
         function initLiteratureAnimation() {
             letters = [];
-            for (let i = 0; i < 70; i++) { // More particles for a denser "rain"
+            // Increased the number of letters to 90
+            for (let i = 0; i < 90; i++) {
                 letters.push({
                     char: chars.charAt(Math.floor(Math.random() * chars.length)),
                     x: Math.random() * mainCanvas.width,
-                    y: Math.random() * mainCanvas.height,
+                    y: Math.random() * -500, // Start falling from just above the screen
                     fontSize: Math.random() * 15 + 10,
                     speedY: Math.random() * 1 + 0.5,
                     color: `rgba(180, 83, 9, ${Math.random() * 0.3 + 0.2})`
@@ -645,9 +646,9 @@
                 // Update position
                 letter.y += letter.speedY;
 
-                // Reset when it falls off screen
-                if (letter.y > mainCanvas.height) {
-                    letter.y = 0;
+                // Reset when it falls off screen for a continuous flow
+                if (letter.y > mainCanvas.height + 40) {
+                    letter.y = -40; // Reset above the screen
                     letter.x = Math.random() * mainCanvas.width;
                 }
             });
@@ -666,7 +667,8 @@
 
             let newAnimation = null;
 
-            if (scrollY > literatureTop - windowHeight && scrollY < literatureTop + literatureHeight) {
+            // Delay the literature animation until the user is further down the page
+            if (scrollY > literatureTop - windowHeight / 1.5 && scrollY < literatureTop + literatureHeight) {
                 newAnimation = 'literature';
             } else if (scrollY > mathematicsTop - windowHeight && scrollY < mathematicsTop + mathematicsHeight) {
                 newAnimation = 'mathematics';
