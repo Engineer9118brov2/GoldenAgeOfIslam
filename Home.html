@@ -155,6 +155,7 @@
         </div>
     </nav>
 <main>
+    <canvas id="main-background-animation" class="fixed top-0 left-0 w-full h-full -z-10"></canvas>
     <!-- Home Section -->
     <section id="home" class="relative hero-pattern py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <canvas id="hero-animation" class="absolute top-0 left-0 w-full h-full z-0"></canvas>
@@ -537,6 +538,166 @@
 
         // Use a timeout to ensure the hero section has its full dimensions
         setTimeout(startAnimation, 100);
+
+        // Scrollytelling background animation
+        const mainCanvas = document.getElementById('main-background-animation');
+        const mainCtx = mainCanvas.getContext('2d');
+        let currentAnimation;
+
+        function resizeMainCanvas() {
+            mainCanvas.width = window.innerWidth;
+            mainCanvas.height = window.innerHeight;
+        }
+
+        const medicineSection = document.getElementById('medicine');
+        const mathematicsSection = document.getElementById('mathematics');
+        const literatureSection = document.getElementById('literature');
+
+        // Animation for Medicine Section (Floating cells)
+        let cells = [];
+        function initMedicineAnimation() {
+            cells = [];
+            for (let i = 0; i < 50; i++) {
+                cells.push({
+                    x: Math.random() * mainCanvas.width,
+                    y: Math.random() * mainCanvas.height,
+                    radius: Math.random() * 5 + 2,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    color: `rgba(217, 119, 6, ${Math.random() * 0.2 + 0.1})`
+                });
+            }
+        }
+
+        function animateMedicine() {
+            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            cells.forEach(cell => {
+                cell.x += cell.vx;
+                cell.y += cell.vy;
+
+                if (cell.x < 0 || cell.x > mainCanvas.width) cell.vx *= -1;
+                if (cell.y < 0 || cell.y > mainCanvas.height) cell.vy *= -1;
+
+                mainCtx.beginPath();
+                mainCtx.arc(cell.x, cell.y, cell.radius, 0, Math.PI * 2);
+                mainCtx.fillStyle = cell.color;
+                mainCtx.fill();
+            });
+        }
+
+        // Animation for Mathematics Section (Geometric patterns)
+        let shapes = [];
+        function initMathematicsAnimation() {
+            shapes = [];
+            for (let i = 0; i < 30; i++) {
+                shapes.push({
+                    x: Math.random() * mainCanvas.width,
+                    y: Math.random() * mainCanvas.height,
+                    size: Math.random() * 20 + 10,
+                    angle: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 0.01,
+                    color: `rgba(92, 40, 14, ${Math.random() * 0.2 + 0.1})`
+                });
+            }
+        }
+
+        function animateMathematics() {
+            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            shapes.forEach(shape => {
+                shape.angle += shape.rotationSpeed;
+
+                mainCtx.save();
+                mainCtx.translate(shape.x, shape.y);
+                mainCtx.rotate(shape.angle);
+                mainCtx.strokeStyle = shape.color;
+                mainCtx.lineWidth = 2;
+                mainCtx.strokeRect(-shape.size / 2, -shape.size / 2, shape.size, shape.size);
+                mainCtx.restore();
+            });
+        }
+
+        // Animation for Literature Section (Calligraphic lines)
+        let lines = [];
+        function initLiteratureAnimation() {
+            lines = [];
+            for (let i = 0; i < 20; i++) {
+                lines.push({
+                    x: Math.random() * mainCanvas.width,
+                    y: Math.random() * mainCanvas.height,
+                    length: Math.random() * 100 + 50,
+                    angle: Math.random() * Math.PI * 2,
+                    speed: (Math.random() - 0.5) * 0.3,
+                    width: Math.random() * 1.5 + 0.5,
+                    color: `rgba(180, 83, 9, ${Math.random() * 0.2 + 0.1})`
+                });
+            }
+        }
+
+        function animateLiterature() {
+            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            lines.forEach(line => {
+                line.x += line.speed;
+                if (line.x > mainCanvas.width + line.length) line.x = -line.length;
+                if (line.x < -line.length) line.x = mainCanvas.width + line.length;
+
+                mainCtx.beginPath();
+                mainCtx.moveTo(line.x, line.y);
+                mainCtx.lineTo(line.x + Math.cos(line.angle) * line.length, line.y + Math.sin(line.angle) * line.length);
+                mainCtx.strokeStyle = line.color;
+                mainCtx.lineWidth = line.width;
+                mainCtx.stroke();
+            });
+        }
+
+        function handleScrollAnimation() {
+            const scrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+
+            const medicineTop = medicineSection.offsetTop;
+            const medicineHeight = medicineSection.offsetHeight;
+            const mathematicsTop = mathematicsSection.offsetTop;
+            const mathematicsHeight = mathematicsSection.offsetHeight;
+            const literatureTop = literatureSection.offsetTop;
+            const literatureHeight = literatureSection.offsetHeight;
+
+            let newAnimation = null;
+
+            if (scrollY > literatureTop - windowHeight && scrollY < literatureTop + literatureHeight) {
+                newAnimation = 'literature';
+            } else if (scrollY > mathematicsTop - windowHeight && scrollY < mathematicsTop + mathematicsHeight) {
+                newAnimation = 'mathematics';
+            } else if (scrollY > medicineTop - windowHeight && scrollY < medicineTop + medicineHeight) {
+                newAnimation = 'medicine';
+            }
+
+            if (newAnimation !== currentAnimation) {
+                currentAnimation = newAnimation;
+                mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+
+                if (currentAnimation === 'medicine') initMedicineAnimation();
+                else if (currentAnimation === 'mathematics') initMathematicsAnimation();
+                else if (currentAnimation === 'literature') initLiteratureAnimation();
+            }
+        }
+
+        function animateLoop() {
+            if (currentAnimation === 'medicine') animateMedicine();
+            else if (currentAnimation === 'mathematics') animateMathematics();
+            else if (currentAnimation === 'literature') animateLiterature();
+
+            requestAnimationFrame(animateLoop);
+        }
+
+        window.addEventListener('resize', () => {
+            resizeMainCanvas();
+            handleScrollAnimation();
+        });
+
+        window.addEventListener('scroll', handleScrollAnimation);
+
+        resizeMainCanvas();
+        handleScrollAnimation();
+        animateLoop();
 
     </script>
 </body>
